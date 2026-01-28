@@ -39,7 +39,7 @@ func upHandler(res http.ResponseWriter, req *http.Request){
 	t, exists := getStrSlice(d, 0)
 	typ := models.MetrType(t)
 	if !exists || typ != models.TCounter && typ != models.TGauge{
-		http.NotFound(res, req)
+		http.Error(res, "bad value", http.StatusBadRequest)
 		return
 	}
 	name, exists := getStrSlice(d, 1)
