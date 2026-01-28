@@ -15,6 +15,13 @@ func isNumeric(s string) bool {
 	return err == nil
 }
 
+func getStrSlice(slice []string, index int) (string, bool) {
+	if index >= 0 && index < len(slice) {
+		return slice[index], true
+	}
+	return "", false
+}
+
 func defHandler(res http.ResponseWriter, req *http.Request){
 	http.NotFound(res, req)
 }
@@ -28,16 +35,20 @@ func upHandler(res http.ResponseWriter, req *http.Request){
 	//}
 
 	d := strings.Split(path.Clean(req.URL.Path), "/")
-	if len(d) < 3{
-		http.Error(res, "bad arguments list", http.StatusBadRequest)
-		return
-	}
-	typ, name, val := models.MetrType(d[0]), d[1], d[2] 
-	if typ != models.TCounter && typ != models.TGauge{
+
+	t, exists := getStrSlice(d, 0)
+	typ := models.MetrType(t)
+	if !exists || typ != models.TCounter && typ != models.TGauge{
 		http.NotFound(res, req)
 		return
 	}
-	if !isNumeric(val){
+	name, exists := getStrSlice(d, 1)
+	if !exists{
+		http.NotFound(res, req)
+		return
+	}
+	val, exists := getStrSlice(d, 2)
+	if !exists || !isNumeric(val){
 		http.Error(res, "bad value", http.StatusBadRequest)
 		return
 	} 
